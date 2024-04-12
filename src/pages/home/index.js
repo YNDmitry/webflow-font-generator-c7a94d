@@ -72,12 +72,12 @@ export default function homePage() {
 		}
 	}
 
-	var convertAll = false;  // whether to convert and display all available fonts or not.
-	var randomText = "";  // random text used for placeholder if user input is null.
-	var userInput = ""; // input from the user (updated on keyup)
-	var selectedFont = "";  // the font the user selected.
-	var selectedStyle = "";  // the font style the user selected.
-	var fonts = [];   // all the fonts that the user can choose from
+	var convertAll = false;  // конвертировать и отображать все доступные шрифты или нет.
+	var randomText = "";  // Рандомный текст
+	var userInput = ""; // input от юзера
+	var selectedFont = "";  // Шрифт который выбрал юзер
+	var selectedStyle = "";  // Выбранный стиль
+	var fonts = [];   // все шрифты
 
 	/* Elements */
 	const e_inputTextArea = $('#input-text-area');
