@@ -89,6 +89,22 @@ export default function homePage() {
       convertText(inputText);
     }
 
+    // // Copy content to clipboard if the user clicks on the converted text.
+    $('[data-copy-btn]').click(function () {
+      let _range = document.createRange();
+      window.getSelection().removeAllRanges();
+      _range.selectNode($(this).closest('.table_item').find('.table_item-title').get(0));
+      window.getSelection().addRange(_range);
+      document.execCommand('copy');
+      window.getSelection().removeAllRanges();
+
+      $(this).find('.text-decoration-none').text("Copied!")
+
+      setTimeout(() => {
+        $(this).find('.text-decoration-none').text("Copy font")
+      }, 1000)
+    })
+
     // Hide the load-more button if there are no more fonts to display
     if (currentIndex >= displayedFonts.length) {
       $('#load-more').hide();
