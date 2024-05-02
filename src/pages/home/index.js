@@ -3,6 +3,8 @@ export default function homePage() {
   let currentIndex = 0; // To track the current index of fonts displayed
   let displayedFonts = []; // Store displayed PseudoFont objects for later reference
   let currentCategory = 'All';
+  let fontsCache = {}; // Глобальный кэш для шрифтов
+
 
   String.prototype.unicodeAwareSplit = function () {
     return [...this];
@@ -68,15 +70,25 @@ export default function homePage() {
   }
 
   async function displayFonts(limit, category = currentCategory) {
-    const response = await fetch('https://uploads-ssl.webflow.com/661fb3747104d7cfc84a31a5/6627337a03be82eb49dbc40f_fonts.json.txt');
-    const _fonts = await response.text();
+    let fontsData;
+    const cacheKey = `${category}_fonts`;
+
+    if (fontsCache[cacheKey]) {
+      fontsData = fontsCache[cacheKey]; // Используем данные из кэша
+    } else {
+      const response = await fetch('https://uploads-ssl.webflow.com/661fb3747104d7cfc84a31a5/6627337a03be82eb49dbc40f_fonts.json.txt');
+      const _fonts = await response.text();
+      fontsData = JSON.parse(_fonts);
+      fontsCache[cacheKey] = fontsData; // Сохраняем загруженные данные в кэш
+    }
+
     if (category !== currentCategory) {
       currentIndex = 0; // Reset index if category changes
       currentCategory = category;
     }
 
     let maxIndex = currentIndex + limit;
-    displayedFonts = JSON.parse(_fonts).filter(font => font.fontCategory === category || category === 'All');
+    displayedFonts = fontsData.filter(font => font.fontCategory === category || category === 'All');
     while (currentIndex < maxIndex && currentIndex < displayedFonts.length) {
       const _font = displayedFonts[currentIndex];
       let _newFont = new PseudoFont(_font.fontName, _font.fontLower, _font.fontUpper, _font.fontDigits, _font.fontCategory);
@@ -84,12 +96,22 @@ export default function homePage() {
       currentIndex++;
     }
 
+    updateUI();
+  }
+
+  function updateUI() {
     const inputText = $('#input-text-area').val();
     if (inputText) {
       convertText(inputText);
     }
 
-    // // Copy content to clipboard if the user clicks on the converted text.
+    // Обновляем состояние кнопок и текста
+    if (currentIndex >= displayedFonts.length) {
+      $('#load-more').hide();
+    } else {
+      $('#load-more').show();
+    }
+
     $('[data-copy-btn]').click(function () {
       let _range = document.createRange();
       window.getSelection().removeAllRanges();
@@ -104,13 +126,6 @@ export default function homePage() {
         $(this).find('.text-decoration-none').text("Copy font")
       }, 1000)
     })
-
-    // Hide the load-more button if there are no more fonts to display
-    if (currentIndex >= displayedFonts.length) {
-      $('#load-more').hide();
-    } else {
-      $('#load-more').show();
-    }
   }
 
   $('#input-text-area').on('input', function () {
