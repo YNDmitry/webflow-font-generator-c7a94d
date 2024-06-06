@@ -3,8 +3,7 @@ export default function homePage() {
   let currentIndex = 0; // To track the current index of fonts displayed
   let displayedFonts = []; // Store displayed PseudoFont objects for later reference
   let currentCategory = 'All';
-  let fontsCache = {}; // Глобальный кэш для шрифтов
-
+  let fontsCache = {}; // Global cache for fronts
 
   String.prototype.unicodeAwareSplit = function () {
     return [...this];
@@ -74,12 +73,12 @@ export default function homePage() {
     const cacheKey = `${category}_fonts`;
 
     if (fontsCache[cacheKey]) {
-      fontsData = fontsCache[cacheKey]; // Используем данные из кэша
+      fontsData = fontsCache[cacheKey]; // Using data from the cache
     } else {
       const response = await fetch('https://uploads-ssl.webflow.com/661fb3747104d7cfc84a31a5/6627337a03be82eb49dbc40f_fonts.json.txt');
       const _fonts = await response.text();
       fontsData = JSON.parse(_fonts);
-      fontsCache[cacheKey] = fontsData; // Сохраняем загруженные данные в кэш
+      fontsCache[cacheKey] = fontsData; // Save the downloaded data to the cache
     }
 
     if (category !== currentCategory) {
@@ -105,12 +104,14 @@ export default function homePage() {
       convertText(inputText);
     }
 
-    // Обновляем состояние кнопок и текста
     if (currentIndex >= displayedFonts.length) {
       $('#load-more').hide();
     } else {
       $('#load-more').show();
     }
+
+    $('[data-filter-item]').removeClass('is-active').attr('disabled', false);
+    $(`[data-filter-item="${currentCategory}"]`).addClass('is-active').attr('disabled', true);
 
     $('[data-copy-btn]').click(function () {
       let _range = document.createRange();
@@ -125,7 +126,7 @@ export default function homePage() {
       setTimeout(() => {
         $(this).find('.text-decoration-none').text("Copy font")
       }, 1000)
-    })
+    });
   }
 
   $('#input-text-area').on('input', function () {
@@ -157,8 +158,17 @@ export default function homePage() {
     displayFonts(15, category); // Initial display with 15 fonts
   });
 
-  // Initial display of 15 fonts
-  displayFonts(15);
+  // Function to get the category from URL
+  function getCategoryFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('category') || 'All';
+  }
+
+  // Get initial category from URL
+  currentCategory = getCategoryFromURL();
+
+  // Initial display of 15 fonts based on URL category
+  displayFonts(15, currentCategory);
 
   $('#load-more').click(function () {
     displayFonts(30);
