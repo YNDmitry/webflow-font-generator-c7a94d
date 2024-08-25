@@ -1,11 +1,11 @@
-export default function homePage() {
-  const container = $('.table_body')
+export default function init() {
+  const container = $('.table_body');
   let currentIndex = 0; // To track the current index of fonts displayed
   let displayedFonts = []; // Store displayed PseudoFont objects for later reference
-  let currentCategory = 'All';
-  let fontsCache = {}; // Global cache for fronts
+  let currentCategory = 'Free-font-generator';
+  let fontsCache = {}; // Global cache for fonts
 
-  String.prototype.unicodeAwareSplit = function () {
+  String.prototype.unicodeAwareSplit = function() {
     return [...this];
   }
 
@@ -75,7 +75,7 @@ export default function homePage() {
     if (fontsCache[cacheKey]) {
       fontsData = fontsCache[cacheKey]; // Using data from the cache
     } else {
-      const response = await fetch('https://uploads-ssl.webflow.com/661fb3747104d7cfc84a31a5/6627337a03be82eb49dbc40f_fonts.json.txt');
+      const response = await fetch('https://cdn.prod.website-files.com/661fb3747104d7cfc84a31a5/66c45f2e5db92b485c0a5a00_fonts.json.txt');
       const _fonts = await response.text();
       fontsData = JSON.parse(_fonts);
       fontsCache[cacheKey] = fontsData; // Save the downloaded data to the cache
@@ -87,7 +87,7 @@ export default function homePage() {
     }
 
     let maxIndex = currentIndex + limit;
-    displayedFonts = fontsData.filter(font => font.fontCategory === category || category === 'All');
+    displayedFonts = fontsData.filter(font => font.fontCategory === category || category === 'Free-font-generator');
     while (currentIndex < maxIndex && currentIndex < displayedFonts.length) {
       const _font = displayedFonts[currentIndex];
       let _newFont = new PseudoFont(_font.fontName, _font.fontLower, _font.fontUpper, _font.fontDigits, _font.fontCategory);
@@ -110,10 +110,7 @@ export default function homePage() {
       $('#load-more').show();
     }
 
-    $('[data-filter-item]').removeClass('is-active').attr('disabled', false);
-    $(`[data-filter-item="${currentCategory}"]`).addClass('is-active').attr('disabled', true);
-
-    $('[data-copy-btn]').click(function () {
+    $('[data-copy-btn]').click(function() {
       let _range = document.createRange();
       window.getSelection().removeAllRanges();
       _range.selectNode($(this).closest('.table_item').find('.table_item-title').get(0));
@@ -125,17 +122,17 @@ export default function homePage() {
 
       setTimeout(() => {
         $(this).find('.text-decoration-none').text("Copy font")
-      }, 1000)
+      }, 1000);
     });
   }
 
-  $('#input-text-area').on('input', function () {
+  $('#input-text-area').on('input', function() {
     const text = $(this).val();
     convertText(text);
   });
 
   function convertText(text) {
-    $('.table_item-title').each(function () {
+    $('.table_item-title').each(function() {
       const index = $(this).data('font-index');
       const _font = displayedFonts[index];
       let _newFont = new PseudoFont(_font.fontName, _font.fontLower, _font.fontUpper, _font.fontDigits, _font.fontCategory);
@@ -150,27 +147,19 @@ export default function homePage() {
     });
   }
 
-  $('[data-filter-item]').click(function () {
-    const category = $(this).attr('data-filter-item');
-    $('[data-filter-item]').removeClass('is-active').attr('disabled', false);
-    $(this).addClass('is-active').attr('disabled', true);
-    container.empty(); // Clear the container before adding new fonts
-    displayFonts(15, category); // Initial display with 15 fonts
-  });
-
   // Function to get the category from URL
-  function getCategoryFromURL() {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get('category') || 'All';
+  function getCategoryFromPath() {
+    const path = window.location.pathname.split('/').pop();
+    return path.charAt(0).toUpperCase() + path.slice(1) || 'Free-font-generator';
   }
 
-  // Get initial category from URL
-  currentCategory = getCategoryFromURL();
+  // Get initial category from URL path
+  currentCategory = getCategoryFromPath();
 
   // Initial display of 15 fonts based on URL category
   displayFonts(15, currentCategory);
 
-  $('#load-more').click(function () {
+  $('#load-more').click(function() {
     displayFonts(30);
   });
 }
